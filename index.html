@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Search Intelligence | AI Agent</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Syne:wght@700&display=swap');
+
+        :root {
+            --bg-sidebar: #0d0d0d;
+            --bg-main: #171717;
+            --sidebar-width: 260px;
+            --accent: #10a37f;
+            --text-main: #ececec;
+            --text-muted: #b4b4b4;
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg-main);
+            color: var(--text-main);
+            font-family: 'Inter', -apple-system, sans-serif;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- Sidebar --- */
+        aside {
+            width: var(--sidebar-width);
+            background: var(--bg-sidebar);
+            display: flex;
+            flex-direction: column;
+            padding: 12px;
+            border-right: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .new-chat-btn {
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+            margin-bottom: 20px;
+            color: var(--text-main);
+        }
+        .new-chat-btn:hover { background: rgba(255,255,255,0.05); }
+
+        .sidebar-section-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding: 0 6px;
+            margin-bottom: 8px;
+        }
+
+        .history-list { flex: 1; overflow-y: auto; }
+
+        .history-item {
+            padding: 9px 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            color: var(--text-muted);
+            cursor: pointer;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.15s, color 0.15s;
+        }
+        .history-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
+        .history-item svg { flex-shrink: 0; opacity: 0.5; }
+
+        .history-empty {
+            font-size: 12px;
+            color: rgba(255,255,255,0.2);
+            padding: 10px;
+            font-style: italic;
+        }
+
+        /* --- Main Content --- */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        header {
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 1px solid var(--border);
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        #chat-area {
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 220px;
+        }
+
+        /* --- Welcome / Example Prompts --- */
+        #welcome-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px 20px;
+            gap: 32px;
+        }
+
+        .welcome-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            text-align: center;
+            color: #fff;
+        }
+
+        .welcome-subtitle {
+            font-size: 14px;
+            color: var(--text-muted);
+            text-align: center;
+            margin-top: -20px;
+        }
+
+        .examples-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            max-width: 680px;
+            width: 100%;
+        }
+
+        .example-card {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px 16px;
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s, transform 0.15s;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .example-card:hover {
+            background: rgba(255,255,255,0.08);
+            border-color: rgba(16, 163, 127, 0.4);
+            transform: translateY(-2px);
+        }
+        .example-card .ex-icon { font-size: 18px; margin-bottom: 4px; }
+        .example-card .ex-title { font-size: 13px; font-weight: 500; color: #fff; }
+        .example-card .ex-sub { font-size: 12px; color: var(--text-muted); }
+
+        /* --- Messages --- */
+        .message-row {
+            padding: 24px 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        .message-content {
+            max-width: 760px;
+            width: 90%;
+            display: flex;
+            gap: 20px;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .msg-user { background: transparent; }
+        .msg-bot { background: rgba(255,255,255,0.02); }
+
+        .avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 6px;
+            flex-shrink: 0;
+            background: #5436da;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+        }
+        .msg-bot .avatar { background: var(--accent); }
+
+        .text-block { flex: 1; color: #d1d1d1; }
+        .text-block strong { color: #fff; }
+
+        /* Error styling */
+        .error-msg {
+            color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.08);
+            border: 1px solid rgba(255, 107, 107, 0.2);
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 14px;
+        }
+
+        /* --- Sources Grid --- */
+        .sources-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 16px;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .sources-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 10px;
+        }
+        .source-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            padding: 8px 12px;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: transform 0.2s, background 0.2s;
+        }
+        .source-card:hover { background: rgba(255,255,255,0.06); transform: translateY(-2px); }
+        .source-card span { display: block; font-size: 11px; color: var(--accent); margin-bottom: 4px; }
+        .source-card p { font-size: 12px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* --- Input Bar --- */
+        .input-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 20px 0 32px;
+            background: linear-gradient(transparent, var(--bg-main) 30%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* Quick chips shown above input */
+        .quick-chips {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 760px;
+            width: 90%;
+        }
+
+        .chip {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 6px 14px;
+            font-size: 12px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s, border-color 0.2s;
+            white-space: nowrap;
+        }
+        .chip:hover {
+            background: rgba(16, 163, 127, 0.12);
+            border-color: rgba(16, 163, 127, 0.4);
+            color: #fff;
+        }
+
+        .input-box-wrapper {
+            max-width: 760px;
+            width: 90%;
+            background: #212121;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: border-color 0.2s;
+        }
+        .input-box-wrapper:focus-within { border-color: rgba(16, 163, 127, 0.5); }
+
+        #query-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #fff;
+            font-size: 15px;
+            padding: 8px 0;
+            font-family: 'Inter', sans-serif;
+        }
+        #query-input::placeholder { color: rgba(255,255,255,0.3); }
+
+        #send-btn {
+            background: #676767;
+            color: #212121;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            cursor: not-allowed;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        #send-btn.active { background: #fff; cursor: pointer; }
+
+        .footer-note {
+            font-size: 11px;
+            color: rgba(255,255,255,0.25);
+        }
+
+        /* --- Thinking dots --- */
+        .thinking-dots { display: flex; gap: 4px; padding: 10px 0; }
+        .dot { width: 6px; height: 6px; background: #676767; border-radius: 50%; animation: blink 1.4s infinite; }
+        .dot:nth-child(2) { animation-delay: 0.2s; }
+        .dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes blink { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+<aside>
+    <div class="new-chat-btn" onclick="startNewChat()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        New Chat
+    </div>
+    <div class="sidebar-section-label">Recent</div>
+    <div class="history-list" id="history-list">
+        <div class="history-empty" id="history-empty">No searches yet</div>
+    </div>
+</aside>
+
+<main>
+    <header>Search Intelligence</header>
+
+    <div id="chat-area">
+        <!-- Welcome screen shown initially -->
+        <div id="welcome-screen">
+            <div>
+                <div class="welcome-title">What do you want to know?</div>
+                <div class="welcome-subtitle" style="margin-top:10px">Powered by Groq · Llama 3.3 70B + Tavily real-time search</div>
+            </div>
+            <div class="examples-grid">
+                <div class="example-card" onclick="runExample('Latest AI news today')">
+                    <div class="ex-icon">🤖</div>
+                    <div class="ex-title">Latest AI news today</div>
+                    <div class="ex-sub">What's happening in AI right now</div>
+                </div>
+                <div class="example-card" onclick="runExample('Top crypto prices today')">
+                    <div class="ex-icon">₿</div>
+                    <div class="ex-title">Top crypto prices today</div>
+                    <div class="ex-sub">Bitcoin, Ethereum & more</div>
+                </div>
+                <div class="example-card" onclick="runExample('Best Python frameworks 2026')">
+                    <div class="ex-icon">🐍</div>
+                    <div class="ex-title">Best Python frameworks 2026</div>
+                    <div class="ex-sub">FastAPI, Django, Flask & beyond</div>
+                </div>
+                <div class="example-card" onclick="runExample('MacBook M5 specs and release date')">
+                    <div class="ex-icon">💻</div>
+                    <div class="ex-title">MacBook M5 specs</div>
+                    <div class="ex-sub">Latest Apple silicon details</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="input-container">
+        <!-- Quick suggestion chips -->
+        <div class="quick-chips" id="quick-chips">
+            <div class="chip" onclick="runExample('Latest AI news today')">🤖 Latest AI news</div>
+            <div class="chip" onclick="runExample('Top crypto prices today')">₿ Crypto prices</div>
+            <div class="chip" onclick="runExample('Best Python frameworks 2026')">🐍 Python frameworks</div>
+            <div class="chip" onclick="runExample('MacBook M5 specs and release date')">💻 MacBook M5</div>
+        </div>
+
+        <div class="input-box-wrapper">
+            <input id="query-input" placeholder="Message Search Intelligence..." autocomplete="off">
+            <button id="send-btn" onclick="sendQuery()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="19" x2="12" y2="5"></line>
+                    <polyline points="5 12 12 5 19 12"></polyline>
+                </svg>
+            </button>
+        </div>
+        <div class="footer-note">AI can make mistakes. Check important info.</div>
+    </div>
+</main>
+
+<script>
+    const API_URL = "http://127.0.0.1:8000/search";
+    const input = document.getElementById('query-input');
+    const btn = document.getElementById('send-btn');
+    const chatArea = document.getElementById('chat-area');
+    const historyList = document.getElementById('history-list');
+    const historyEmpty = document.getElementById('history-empty');
+    const welcomeScreen = document.getElementById('welcome-screen');
+    const quickChips = document.getElementById('quick-chips');
+
+    // In-memory recent searches (resets on page reload / new chat)
+    let recentSearches = [];
+    let chatStarted = false;
+
+    // Toggle send button
+    input.addEventListener('input', () => {
+        btn.classList.toggle('active', input.value.trim().length > 0);
+    });
+
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendQuery(); }
+    });
+
+    function scroll() {
+        chatArea.scrollTo({ top: chatArea.scrollHeight, behavior: 'smooth' });
+    }
+
+    function hideWelcome() {
+        if (!chatStarted) {
+            welcomeScreen.style.display = 'none';
+            quickChips.style.display = 'none';
+            chatStarted = true;
+        }
+    }
+
+    function addToHistory(query) {
+        // Avoid exact duplicates
+        if (recentSearches.includes(query)) return;
+        recentSearches.unshift(query);
+
+        // Keep max 20
+        if (recentSearches.length > 20) recentSearches.pop();
+
+        renderHistory();
+    }
+
+    function renderHistory() {
+        historyEmpty.style.display = recentSearches.length === 0 ? 'block' : 'none';
+
+        // Remove old items (keep the empty placeholder)
+        const existingItems = historyList.querySelectorAll('.history-item');
+        existingItems.forEach(el => el.remove());
+
+        recentSearches.forEach(q => {
+            const item = document.createElement('div');
+            item.className = 'history-item';
+            item.title = q;
+            item.innerHTML = `
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                ${q}
+            `;
+            item.onclick = () => runExample(q);
+            historyList.insertBefore(item, historyEmpty);
+        });
+    }
+
+    function appendMessage(role, text, sources = [], isError = false) {
+        const row = document.createElement('div');
+        row.className = `message-row ${role === 'user' ? 'msg-user' : 'msg-bot'}`;
+
+        let sourcesHtml = '';
+        if (sources.length > 0) {
+            sourcesHtml = `<div class="sources-label">Sources</div><div class="sources-grid">` +
+                sources.map(s => `
+                    <a href="${s.url}" target="_blank" class="source-card">
+                        <span>↗ Source</span>
+                        <p>${s.title || 'View Link'}</p>
+                    </a>
+                `).join('') + `</div>`;
+        }
+
+        const textHtml = isError
+            ? `<div class="error-msg">⚠️ ${text}</div>`
+            : text;
+
+        row.innerHTML = `
+            <div class="message-content">
+                <div class="avatar">${role === 'user' ? 'U' : 'AI'}</div>
+                <div class="text-block">
+                    ${textHtml}
+                    ${sourcesHtml}
+                </div>
+            </div>
+        `;
+        chatArea.appendChild(row);
+        scroll();
+    }
+
+    async function sendQuery() {
+        const query = input.value.trim();
+        if (!query) return;
+
+        input.value = '';
+        btn.classList.remove('active');
+
+        hideWelcome();
+        appendMessage('user', query);
+        addToHistory(query);
+
+        // Thinking indicator
+        const thinkingRow = document.createElement('div');
+        thinkingRow.className = 'message-row msg-bot';
+        thinkingRow.innerHTML = `
+            <div class="message-content">
+                <div class="avatar">AI</div>
+                <div class="thinking-dots">
+                    <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                </div>
+            </div>`;
+        chatArea.appendChild(thinkingRow);
+        scroll();
+
+        try {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query })
+            });
+
+            const data = await response.json();
+            thinkingRow.remove();
+
+            if (!response.ok || data.error) {
+                appendMessage('bot', data.answer || data.detail || 'Something went wrong. Please try again.', [], true);
+            } else {
+                appendMessage('bot', data.answer, data.sources || []);
+            }
+        } catch (e) {
+            thinkingRow.remove();
+            appendMessage('bot', 'Unable to reach the backend. Make sure uvicorn is running on port 8000.', [], true);
+        }
+    }
+
+    // Run an example query (from cards or chips or history)
+    function runExample(query) {
+        input.value = query;
+        btn.classList.add('active');
+        input.focus();
+        sendQuery();
+    }
+
+    function startNewChat() {
+        // Clear chat and show welcome again
+        chatArea.innerHTML = '';
+        chatArea.appendChild(welcomeScreen);
+        welcomeScreen.style.display = 'flex';
+        quickChips.style.display = 'flex';
+        chatStarted = false;
+        input.value = '';
+        btn.classList.remove('active');
+    }
+</script>
+</body>
+</html>
