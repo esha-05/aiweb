@@ -1,10 +1,10 @@
-# 🔍 Challenge A — AI Web Search Agent
+# Challenge A — AI Web Search Agent
 
 An AI-powered agent that answers natural language queries using real-time web search data, powered by **Groq (Llama 3.3 70B)** and **Tavily Search API**.
 
 ---
 
-## 🏗️ Architecture Overview
+##  Architecture Overview
 
 ```
 User Query
@@ -41,7 +41,7 @@ User Query
 
 ---
 
-## 📁 Folder Structure
+##  Folder Structure
 
 ```
 ai-web-search-agent/
@@ -55,7 +55,7 @@ ai-web-search-agent/
 
 ---
 
-## ⚙️ Dependencies
+##  Dependencies
 
 | Package | Version | Purpose |
 |---|---|---|
@@ -67,7 +67,7 @@ ai-web-search-agent/
 
 ---
 
-## 🚀 Setup Instructions
+##  Setup Instructions
 
 ### 1. Prerequisites
 - Python 3.9+
@@ -120,7 +120,7 @@ Visit **http://127.0.0.1:8000** in your browser.
 
 ---
 
-## 🖥️ How to Run
+##  How to Run
 
 ```bash
 # Start server
@@ -142,7 +142,7 @@ curl -X POST http://localhost:8000/search \
 
 ---
 
-## 📥 Example Input / Output
+##  Example Input / Output
 
 **Input:**
 ```
@@ -162,7 +162,7 @@ What are the latest specs of MacBook this year?
 
 ---
 
-## 🧠 Design Decisions & Trade-offs
+##  Design Decisions & Trade-offs
 
 | Decision | Reason | Trade-off |
 |---|---|---|
@@ -174,7 +174,7 @@ What are the latest specs of MacBook this year?
 
 ---
 
-## 📡 API Endpoints
+##  API Endpoints
 
 | Method | Endpoint | Description |
 |---|---|---|
@@ -185,7 +185,7 @@ What are the latest specs of MacBook this year?
 
 ---
 
-## 🔒 .gitignore
+##  .gitignore
 
 Make sure your `.env` is never committed:
 
